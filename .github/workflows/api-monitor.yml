@@ -1,0 +1,36 @@
+name: NMGKJ API Daily Check
+
+on:
+  schedule:
+    # 北京时间凌晨2点 = UTC时间18:00（前一日）
+    - cron: '0 18 * * *'  # 每天UTC 18:00执行（北京时间次日02:00）
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  api-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5  # 任务超时时间
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 设置Node.js环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 安装依赖
+      run: npm install
+      
+    - name: 执行接口调用
+      run: npm start
+      
+    - name: 验证响应状态
+      # 检查HTTP状态码是否为200
+      run: |
+        if ! node -e "const axios=require('axios'); axios.get('http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest', {timeout:10000}).then(res=>process.exit(res.status!==200?1:0)).catch(e=>process.exit(1))"; then
+          echo "::error::接口响应状态异常"
+          exit 1
+        fi
