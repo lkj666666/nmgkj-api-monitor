@@ -1,33 +1,39 @@
-const axios = require('axios');
+const http = require('http');
 
-(async () => {
-  const apiUrl = 'http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest';
+const apiUrl = 'http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest';
+
+// 获取北京时间
+function getBeijingTime() {
+  return new Date().toLocaleString('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    hour12: false
+  });
+}
+
+// 执行接口调用
+const request = http.get(apiUrl, (response) => {
+  let data = '';
   
-  try {
-    // 执行GET请求
-    const response = await axios.get(apiUrl, {
-      timeout: 100000,  // 100秒超时
-      headers: {
-        'User-Agent': 'NMGKJ-Monitor/1.0 (GitHub Actions)'
-      }
-    });
-    
-    // 获取北京时间
-    const beijingTime = new Date().toLocaleString('zh-CN', {
-      timeZone: 'Asia/Shanghai',
-      hour12: false
-    });
-    
-    // 结果日志
-    console.log(`[${beijingTime}] ✅ 接口调用成功`);
-    console.log(`状态码: ${response.status}`);
-    console.log('响应数据:', response.data);
-    
-  } catch (error) {
-    // 错误处理
-    console.error(`❌ 接口调用失败: ${error.message}`);
-    
-    // 非零退出码标记任务失败
-    process.exit(1);
-  }
-})();
+  response.on('data', (chunk) => {
+    data += chunk;
+  });
+  
+  response.on('end', () => {
+    console.log(`[${getBeijingTime()}] ✅ 接口调用成功`);
+    console.log(`状态码: ${response.statusCode}`);
+    console.log('响应数据:', data);
+  });
+});
+
+// 设置超时
+request.setTimeout(10000, () => {
+  console.error(`❌ 接口调用超时 (10秒)`);
+  request.destroy(); // 终止请求
+  process.exit(1);
+});
+
+// 错误处理
+request.on('error', (error) => {
+  console.error(`❌ 接口调用失败: ${error.message}`);
+  process.exit(1);
+});
