@@ -2,35 +2,36 @@ name: NMGKJ API Daily Check
 
 on:
   schedule:
-    # 北京时间凌晨2点 = UTC时间18:00（前一日）
-    - cron: '0 18 * * *'  # 每天UTC 18:00执行（北京时间次日02:00）
-  workflow_dispatch:  # 允许手动触发
+    - cron: '0 18 * * *'  # UTC 18:00 = 北京时间次日02:00
+  workflow_dispatch:
 
 jobs:
   api-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # 任务超时时间
+    timeout-minutes: 5
     
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
       
-    - name: 设置Node.js环境
+    - name: 设置Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
         
+    # 修复：显式安装依赖（不依赖lockfile）
     - name: 安装依赖
-      run: npm install
+      run: |
+        npm install axios
+        echo "手动安装依赖完成"
       
     - name: 执行接口调用
-      run: npm start
+      run: node api-caller.js
       
-    - name: 验证响应状态
-      # 检查HTTP状态码是否为200
+    - name: 验证响应
+      # 简化的状态码检查
       run: |
-        if ! node -e "const axios=require('axios'); axios.get('http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest', {timeout:10000}).then(res=>process.exit(res.status!==200?1:0)).catch(e=>process.exit(1))"; then
+        if ! node -e "const axios=require('axios'); axios.get('http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest', {timeout:10000}).then(res=>{console.log('状态码:',res.status); process.exit(res.status!==200?1:0)}).catch(e=>{console.error(e); process.exit(1)})"; then
           echo "::error::接口响应状态异常"
           exit 1
         fi
