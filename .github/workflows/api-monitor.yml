@@ -14,24 +14,28 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v4
       
-    - name: 设置Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    # 修复：显式安装依赖（不依赖lockfile）
+    # 使用系统自带Node.js
+    - name: 检查Node.js版本
+      run: |
+        echo "Node.js版本: $(node --version)"
+        echo "npm版本: $(npm --version)"
+      
+    # 直接安装所需依赖
     - name: 安装依赖
       run: |
-        npm install axios
-        echo "手动安装依赖完成"
+        npm install axios --global --no-package-lock  # 全局安装避免锁定文件问题
+        echo "依赖安装完成"
       
     - name: 执行接口调用
       run: node api-caller.js
       
+    # 简化的响应验证
     - name: 验证响应
-      # 简化的状态码检查
       run: |
-        if ! node -e "const axios=require('axios'); axios.get('http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest', {timeout:10000}).then(res=>{console.log('状态码:',res.status); process.exit(res.status!==200?1:0)}).catch(e=>{console.error(e); process.exit(1)})"; then
+        # 使用curl进行验证
+        if ! curl -s -o /dev/null -w "%{http_code}" http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest | grep -q 200; then
           echo "::error::接口响应状态异常"
           exit 1
+        else
+          echo "✅ 接口响应验证通过"
         fi
