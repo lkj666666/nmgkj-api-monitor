@@ -34,12 +34,10 @@ function callApi() {
       });
       
       res.on('end', () => {
-        const result = {
+        resolve({
           statusCode: res.statusCode,
-          headers: res.headers,
           body: data
-        };
-        resolve(result);
+        });
       });
     });
 
