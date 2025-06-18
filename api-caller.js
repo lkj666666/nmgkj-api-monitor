@@ -26,8 +26,8 @@ const request = http.get(apiUrl, (response) => {
 });
 
 // 设置超时
-request.setTimeout(10000, () => {
-  console.error(`❌ 接口调用超时 (10秒)`);
+request.setTimeout(100000, () => {
+  console.error(`❌ 接口调用超时 (100秒)`);
   request.destroy(); // 终止请求
   process.exit(1);
 });
