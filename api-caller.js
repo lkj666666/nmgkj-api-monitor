@@ -23,7 +23,7 @@ function callApi() {
       headers: {
         'User-Agent': 'GitHubActions-Monitor/1.0'
       },
-      timeout: 10000 // 10秒超时
+      timeout: 100000 // 100秒超时
     };
 
     const req = http.request(options, (res) => {
@@ -43,7 +43,7 @@ function callApi() {
 
     req.on('timeout', () => {
       req.destroy();
-      reject(new Error('请求超时 (10秒)'));
+      reject(new Error('请求超时 (100秒)'));
     });
 
     req.on('error', (err) => {
