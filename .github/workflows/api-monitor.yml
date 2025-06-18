@@ -3,39 +3,33 @@ name: NMGKJ API Daily Check
 on:
   schedule:
     - cron: '0 18 * * *'  # UTC 18:00 = 北京时间次日02:00
-  workflow_dispatch:
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   api-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 5  # 任务超时时间
     
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
       
-    # 使用系统自带Node.js
-    - name: 检查Node.js版本
-      run: |
-        echo "Node.js版本: $(node --version)"
-        echo "npm版本: $(npm --version)"
-      
-    # 直接安装所需依赖
-    - name: 安装依赖
-      run: |
-        npm install axios --global --no-package-lock  # 全局安装避免锁定文件问题
-        echo "依赖安装完成"
-      
+    # 仅设置Node.js环境，不尝试缓存依赖
+    - name: 设置Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'false'  # 明确禁用缓存功能
+        
     - name: 执行接口调用
       run: node api-caller.js
       
-    # 简化的响应验证
-    - name: 验证响应
+    # 验证步骤（可选，因为脚本内已有验证）
+    - name: 验证结果
       run: |
-        # 使用curl进行验证
-        if ! curl -s -o /dev/null -w "%{http_code}" http://training.nmgkj.edufe.cn/JXJY/nmgkj/api/nmgCallBackTest | grep -q 200; then
-          echo "::error::接口响应状态异常"
+        if ! node api-caller.js; then
+          echo "::error::接口检查失败"
           exit 1
         else
-          echo "✅ 接口响应验证通过"
+          echo "✅ 接口检查成功"
         fi
