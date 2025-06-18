@@ -14,22 +14,19 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v4
       
-    # 仅设置Node.js环境，不尝试缓存依赖
-    - name: 设置Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'false'  # 明确禁用缓存功能
-        
+    # 直接使用系统自带的Node.js，完全跳过setup-node
     - name: 执行接口调用
-      run: node api-caller.js
-      
-    # 验证步骤（可选，因为脚本内已有验证）
-    - name: 验证结果
       run: |
-        if ! node api-caller.js; then
-          echo "::error::接口检查失败"
+        # 显示Node.js版本信息
+        echo "使用系统预装的Node.js版本: $(node --version)"
+        
+        # 执行监控脚本
+        node api-caller.js
+        
+        # 检查执行结果
+        if [ $? -ne 0 ]; then
+          echo "::error::接口调用失败"
           exit 1
         else
-          echo "✅ 接口检查成功"
+          echo "✅ 接口调用成功"
         fi
