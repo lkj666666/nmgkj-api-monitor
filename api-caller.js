@@ -1,6 +1,6 @@
 const http = require('http');
 
-// 接口配置
+// 接口配
 const apiHost = 'training.nmgkj.edufe.cn';
 const apiPath = '/JXJY/nmgkj/api/nmgCallBackTest';
 
