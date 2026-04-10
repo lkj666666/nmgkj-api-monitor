@@ -9,7 +9,7 @@ on:
 jobs:
   api-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # 任务超时时间
+    timeout-minutes: 5  # 任务超时时间1
     
     steps:
     - name: 检出代码
