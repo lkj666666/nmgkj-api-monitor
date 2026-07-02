@@ -73,6 +73,6 @@ function callApi() {
     
   } catch (error) {
     console.error(`❌ 接口调用失败: ${error.message}`);
-    process.exit(1); // 非零退出码表示失败
+    process.exit(1); // 非零退出码表示失败 
   }
 })();
